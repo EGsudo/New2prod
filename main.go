@@ -26,7 +26,10 @@ func (t Training) distance() float64 {
 	return float64(t.Action) * t.LenStep / MInKm
 }
 func (t Training) meanSpeed() float64 {
-	return (float64(t.Action) * t.LenStep / MInKm) / t.Duration.Hours()
+	if t.Duration.Hours() != 0 {
+		return t.distance() / t.Duration.Hours()
+	}
+	return 0
 }
 func (t Training) Calories() float64 {
 	return 0
@@ -41,7 +44,13 @@ type InfoMessage struct {
 }
 
 func (t Training) TrainingInfo() InfoMessage {
-	return InfoMessage{}
+	info := InfoMessage{}
+	info.TrainingType = t.TrainingType
+	info.Duration = t.Duration
+	info.Distance = t.distance()
+	info.Speed = t.meanSpeed()
+	info.Calories = t.Calories()
+	return info
 }
 func (i InfoMessage) String() string {
 	return fmt.Sprintf("Тип тренировки: %s\nДлительность: %v мин\nДистанция: %.2f км.\nСр. скорость: %.2f км/ч\nПотрачено ккал: %.2f\n",
@@ -72,11 +81,6 @@ func (r Running) Calories() float64 {
 }
 func (r Running) TrainingInfo() InfoMessage {
 	info := r.Training.TrainingInfo()
-	info.TrainingType = r.TrainingType
-	info.Duration = r.Duration
-	info.Distance = r.Training.distance()
-	info.Speed = r.meanSpeed()
-	info.Calories = r.Calories()
 	return info
 }
 
@@ -96,11 +100,6 @@ func (w Walking) Calories() float64 {
 }
 func (w Walking) TrainingInfo() InfoMessage {
 	info := w.Training.TrainingInfo()
-	info.TrainingType = w.TrainingType
-	info.Duration = w.Duration
-	info.Distance = w.Training.distance()
-	info.Speed = w.meanSpeed()
-	info.Calories = w.Calories()
 	return info
 }
 
@@ -124,16 +123,11 @@ func (s Swimming) Calories() float64 {
 }
 func (s Swimming) TrainingInfo() InfoMessage {
 	info := s.Training.TrainingInfo()
-	info.TrainingType = s.TrainingType
-	info.Duration = s.Duration
-	info.Distance = s.Training.distance()
-	info.Speed = s.meanSpeed()
-	info.Calories = s.Calories()
 	return info
 }
 func ReadData(training CaloriesCalculator) string {
-	training.Calories()
 	info := training.TrainingInfo()
+	info.Calories = training.Calories()
 	return fmt.Sprint(info)
 }
 func main() {
